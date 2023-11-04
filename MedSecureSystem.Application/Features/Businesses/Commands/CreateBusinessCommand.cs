@@ -16,3 +16,4 @@ namespace MedSecureSystem.Application.Features.Businesses.Commands
         public string Country { get; set; }
     }
 }
+
