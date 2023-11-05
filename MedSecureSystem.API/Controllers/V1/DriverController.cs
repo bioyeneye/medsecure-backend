@@ -28,6 +28,9 @@ namespace MedSecureSystem.API.Controllers.V1
         {
         }
 
+        /**
+        Add driver
+        **/
         [HttpPost]
         [Authorize(Roles = "SystemAdmin")]
         [SwaggerOperation(Summary = "Create driver", Description = "create driver")]
