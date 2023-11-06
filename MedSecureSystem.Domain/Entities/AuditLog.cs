@@ -9,5 +9,6 @@ namespace MedSecureSystem.Domain.Entities
         public string NewValues { get; set; }
         public string OldValues { get; set; }
         public DateTime CreatedAt { get; set; }
+
     }
 }

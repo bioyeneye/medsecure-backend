@@ -14,4 +14,5 @@ namespace MedSecureSystem.Domain.Enums
         Patient,
         Driver
     }
+
 }
