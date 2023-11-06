@@ -32,6 +32,7 @@ namespace MedSecureSystem.Infrastructure.Data
             {
                 context.Database.Migrate();
             }
+            
 
             // Seed roles
             await SeedRolesAsync(roleManager, logger);
