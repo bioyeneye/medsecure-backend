@@ -117,6 +117,7 @@ namespace MedSecureSystem.API.Controllers.V1
             return Ok(ApiResult<UserDto>.SuccessResult(await CreateInfoResponseAsync(user, _userManager)));
         }
 
+        // SD
         [HttpGet("{id}")]
         [Authorize(Roles = "SystemAdmin,BusinessAgent")]
         [SwaggerOperation(Summary = "Get agent details", Description = "get agent")]
