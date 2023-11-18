@@ -21,6 +21,7 @@ namespace MedSecureSystem.API.Controllers.V1
     {
         private readonly IBusinessService _businessService;
 
+        // business account access
         public BusinessController(UserManager<ApplicationUser> userManager, IServiceProvider serviceProvider, IBusinessService businessService) : base(userManager, serviceProvider)
         {
             _businessService = businessService;
