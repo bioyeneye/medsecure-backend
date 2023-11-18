@@ -18,5 +18,4 @@ namespace MedSecureSystem.Application.Interfaces
         Task<ApiResult<PaginatedResult<DeliveryDto>>> GetDeliveryRequests(string user, string role, string businessid, PaginationQuery pagination);
         Task<ApiResult<bool>> StartDeliveryByDriver(long requestId, string driverId);
     }
-
 }

@@ -39,3 +39,4 @@ namespace MedSecureSystem.Application.Interfaces
     }
 
 }
+
