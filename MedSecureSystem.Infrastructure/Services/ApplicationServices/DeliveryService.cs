@@ -240,20 +240,21 @@ namespace MedSecureSystem.Infrastructure.Services.ApplicationServices
             {
                 var deliveryRequest = await _deliveryRequestRepository.GetByIdAsync(requestId);
                 var bsuiness = await _businessRepository.FirstOrDefaultAsync(c => c.BusinessUniqueKey == businessId);
-                if (deliveryRequest != null && deliveryRequest.BusinessId != bsuiness.Id)
+                if (deliveryRequest != null && deliveryRequest.BusinessId == bsuiness.Id)
                 {
                     if (deliveryRequest.Status != DeliveryRequestStatus.Requested)
                     {
                         return ApiResult<bool>.FailureResult(null, $"Delivery Request needs to be in REQUESTED state");
                     }
-                    var code = GenerateRandomUniqueNumbers(6);
+                    var code = GenerateRandomUniqueNumbers(1);
 
                     deliveryRequest.CodeToGiveToDriver = code;
                     deliveryRequest.Status = DeliveryRequestStatus.Preparing;
                     deliveryRequest.AgentId = agentId;
                     deliveryRequest.AgentAcceptedTime = DateTime.UtcNow;
+                    deliveryRequest.UpdatedAt = DateTime.UtcNow;
                     _deliveryRequestRepository.Update(deliveryRequest);
-
+                    await _deliveryRequestRepository.SaveAsync();
                     await _emailSender.SendEmailAsync(email, "MedSecure: Agent Request confirmed", $"Request preparation comfirmed, you this code below to complete the request\ncode: {code}");
                     return ApiResult<bool>.SuccessResult(true, $"Request granted to prepare delivery");
                 }
@@ -282,7 +283,10 @@ namespace MedSecureSystem.Infrastructure.Services.ApplicationServices
                         {
                             deliveryRequest.Status = DeliveryRequestStatus.ReadyForPickup;
                             deliveryRequest.AgentCompletedTime = DateTime.UtcNow;
+                            deliveryRequest.UpdatedAt = DateTime.UtcNow;
+
                             _deliveryRequestRepository.Update(deliveryRequest);
+                            await _deliveryRequestRepository.SaveAsync();
 
                             return ApiResult<bool>.SuccessResult(true, $"Delivery Request prepared, awaiting driver pickup");
                         }
@@ -312,13 +316,17 @@ namespace MedSecureSystem.Infrastructure.Services.ApplicationServices
                 {
                     if (deliveryRequest.Status == DeliveryRequestStatus.ReadyForPickup)
                     {
-                        var code = GenerateRandomUniqueNumbers(6);
+                        var code = GenerateRandomUniqueNumbers(1);
 
                         deliveryRequest.CodeToConfirmDelivery = code;
                         deliveryRequest.Status = DeliveryRequestStatus.OnWayForDelivery;
                         deliveryRequest.DriverId = driverId;
                         deliveryRequest.DriverAcceptedTime = DateTime.UtcNow;
+                        deliveryRequest.UpdatedAt = DateTime.UtcNow;
+
+
                         _deliveryRequestRepository.Update(deliveryRequest);
+                        await _deliveryRequestRepository.SaveAsync();
 
                         await _emailSender.SendEmailAsync(email, "MedSecure: Driver Request confirmed", $"Request acceptance comfirmed, you this code below to complete the request\ncode: {code}");
 
@@ -343,16 +351,19 @@ namespace MedSecureSystem.Infrastructure.Services.ApplicationServices
             try
             {
                 var deliveryRequest = await _deliveryRequestRepository.GetByIdAsync(requestId);
-                if (deliveryRequest != null && deliveryRequest.DriverId != driverId)
+                if (deliveryRequest != null && deliveryRequest.DriverId == driverId)
                 {
                     if (deliveryRequest.Status == DeliveryRequestStatus.OnWayForDelivery)
                     {
-                        var code = !string.IsNullOrWhiteSpace(deliveryRequest.CodeToConfirmReception) ? deliveryRequest.CodeToConfirmReception : GenerateRandomUniqueNumbers(6);
+                        var code = !string.IsNullOrWhiteSpace(deliveryRequest.CodeToConfirmReception) ? deliveryRequest.CodeToConfirmReception : GenerateRandomUniqueNumbers(1);
 
                         deliveryRequest.Status = DeliveryRequestStatus.OnWayForDelivery;
                         deliveryRequest.CodeToConfirmReception = code;
                         deliveryRequest.DriverStartedDeliveryTime = DateTime.UtcNow;
+                        deliveryRequest.UpdatedAt = DateTime.UtcNow;
+
                         _deliveryRequestRepository.Update(deliveryRequest);
+                        await _deliveryRequestRepository.SaveAsync();
 
                         var patient = await _userManager.FindByIdAsync(deliveryRequest.PatientId);
                         await _emailSender.SendEmailAsync(patient.Email, "MedSecure: Delivery on the way", $"Your delivery request is on it's way, use this code below to complete the request to prove reception\ncode: {code}");
@@ -390,7 +401,10 @@ namespace MedSecureSystem.Infrastructure.Services.ApplicationServices
 
                     deliveryRequest.Status = DeliveryRequestStatus.DriverCompletedDelivery;
                     deliveryRequest.DriverCompletedTime = DateTime.UtcNow;
+                    deliveryRequest.UpdatedAt = DateTime.UtcNow;
+
                     _deliveryRequestRepository.Update(deliveryRequest);
+                    await _deliveryRequestRepository.SaveAsync();
 
                     return ApiResult<bool>.SuccessResult(true, $"Delivery confirmed");
                 }
@@ -416,14 +430,17 @@ namespace MedSecureSystem.Infrastructure.Services.ApplicationServices
                         return ApiResult<bool>.NotFoundResult($"Delivery confirmation failed, wrong code");
                     }
 
-                    if (deliveryRequest.Status != DeliveryRequestStatus.OnWayForDelivery)
+                    if (deliveryRequest.Status != DeliveryRequestStatus.DriverCompletedDelivery)
                     {
                         return ApiResult<bool>.FailureResult(null, $"To confirm delivery the status must be OnWayForDelivery");
                     }
 
                     deliveryRequest.Status = DeliveryRequestStatus.Delivered;
                     deliveryRequest.DriverCompletedTime = DateTime.UtcNow;
+                    deliveryRequest.UpdatedAt = DateTime.UtcNow;
+
                     _deliveryRequestRepository.Update(deliveryRequest);
+                    await _deliveryRequestRepository.SaveAsync();
 
                     var patient = await _userManager.FindByIdAsync(deliveryRequest.PatientId);
                     await _emailSender.SendEmailAsync(patient.Email, "MedSecure: Patient Delivery Completed", $"Cool your delivery of Id: {deliveryRequest.Id} is completed");
@@ -434,6 +451,40 @@ namespace MedSecureSystem.Infrastructure.Services.ApplicationServices
 
                     return ApiResult<bool>.SuccessResult(true, $"Delivery confirmed");
                 }
+
+                return ApiResult<bool>.NotFoundResult($"Delivery Request with id: {requestId} not found");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{method}", nameof(ConfirmDelivery));
+                throw;
+            }
+        }
+
+        public async Task<ApiResult<bool>> CancelRequestAsync(long requestId, string patientid)
+        {
+            try
+            {
+                var deliveryRequest = await _deliveryRequestRepository.GetByIdAsync(requestId);
+                if (deliveryRequest != null && deliveryRequest.PatientId == patientid)
+                {
+                    if ((deliveryRequest.Status == DeliveryRequestStatus.Requested
+                    || deliveryRequest.Status == DeliveryRequestStatus.Preparing
+                    || deliveryRequest.Status == DeliveryRequestStatus.ReadyForPickup))
+                    {
+                        return ApiResult<bool>.FailureResult(null, $"Sorry you can't cancel the request");
+                    }
+
+                    deliveryRequest.UpdatedAt = DateTime.UtcNow;
+
+
+                    deliveryRequest.Status = DeliveryRequestStatus.Canceled; // Assuming 'Cancelled' is a valid status
+                    _deliveryRequestRepository.Update(deliveryRequest);
+                    await _deliveryRequestRepository.SaveAsync();
+
+                    return ApiResult<bool>.SuccessResult(true, $"Delivery request cancelled");
+                }
+
 
                 return ApiResult<bool>.NotFoundResult($"Delivery Request with id: {requestId} not found");
             }

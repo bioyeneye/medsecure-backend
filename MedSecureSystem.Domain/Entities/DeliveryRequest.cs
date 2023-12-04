@@ -47,6 +47,8 @@ namespace MedSecureSystem.Domain.Entities
         public virtual Business Business { get; set; }
 
         public virtual List<DeliveryRequestItem> Items { get; set; }
+        public virtual List<Feedback> Feedbacks { get; set; }
+
     }
 
 }

@@ -94,4 +94,14 @@ namespace MedSecureSystem.Application.Dtos
         public string ClientSecret { get; set; }
         public bool IsActive { get; set; }
     }
+
+
+    public class FeedbackModel
+    {
+        public long Id { get; set; }
+        public long DeliveryRequestId { get; set; }
+        public string UserType { get; set; } // Enum indicating whether the user is a Patient, Agent, or Driver
+        public string Commenter { get; set; }
+        public string Comments { get; set; }
+    }
 }

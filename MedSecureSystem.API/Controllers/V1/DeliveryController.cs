@@ -83,15 +83,15 @@ namespace MedSecureSystem.API.Controllers.V1
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResult<bool>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ApiResult<bool>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> AcceptByAgent(long requestId)
+        public async Task<IActionResult> AcceptByAgent(long id)
         {
             var deliveryService = _serviceProvider.GetRequiredService<IDeliveryService>();
             var role = GetRole();
             var user = GetClaimValue("sub");
-            var businessid = GetClaimValue("businessid");
+            var businessid = GetClaimValue("businessuid");
             var email = GetClaimValue("email");
 
-            return HandleBusinessResult(await deliveryService.AcceptRequestByAgent(requestId, user, email, businessid));
+            return HandleBusinessResult(await deliveryService.AcceptRequestByAgent(id, user, email, businessid));
         }
         // POST: api/DeliveryRequest/CompletePreparationByAgent
         [HttpPost("{id}/complete-preparation")]
@@ -99,15 +99,15 @@ namespace MedSecureSystem.API.Controllers.V1
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResult<bool>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ApiResult<bool>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> CompletePreparationByAgent([FromRoute] long requestId, [FromBody] CodeModel model)
+        public async Task<IActionResult> CompletePreparationByAgent([FromRoute] long id, [FromBody] CodeModel model)
         {
             var deliveryService = _serviceProvider.GetRequiredService<IDeliveryService>();
             var role = GetRole();
             var user = GetClaimValue("sub");
-            var businessid = GetClaimValue("businessid");
+            var businessid = GetClaimValue("businessuid");
             var email = GetClaimValue("email");
 
-            return HandleBusinessResult(await deliveryService.CompletePreparationByAgent(requestId, user, model.Code, businessid));
+            return HandleBusinessResult(await deliveryService.CompletePreparationByAgent(id, user, model.Code, businessid));
         }
 
 
@@ -177,6 +177,22 @@ namespace MedSecureSystem.API.Controllers.V1
             var email = GetClaimValue("email");
 
             return HandleBusinessResult(await deliveryService.ConfirmPatientDelivery(id, user, model.Code));
+        }
+
+        // POST: api/DeliveryRequest/ConfirmDelivery
+        [HttpPut("{id}/cancel-delivery")]
+        [Authorize(Roles = "Patient")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResult<bool>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ApiResult<bool>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> CancelDelivery(long id)
+        {
+            var deliveryService = _serviceProvider.GetRequiredService<IDeliveryService>();
+            var role = GetRole();
+            var user = GetClaimValue("sub");
+            var businessid = GetClaimValue("businessid");
+
+            return HandleBusinessResult(await deliveryService.CancelRequestAsync(id, user));
         }
     }
     public class CodeModel

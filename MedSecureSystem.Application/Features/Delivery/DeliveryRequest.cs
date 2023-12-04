@@ -18,4 +18,11 @@ namespace MedSecureSystem.Application.Features.Delivery
         public string Quantity { get; set; }
         public string Note { get; set; }
     }
+
+    public class CreateDeliveryRequestFeedbackModel
+    {
+
+        public long DeliveryRequestId { get; set; }
+        public string Comments { get; set; }
+    }
 }

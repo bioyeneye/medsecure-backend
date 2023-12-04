@@ -9,6 +9,7 @@ namespace MedSecureSystem.Application.Interfaces
     {
         Task<ApiResult<bool>> AcceptRequestByAgent(long requestId, string agentId, string email, string businessId);
         Task<ApiResult<bool>> AssignDriver(long requestId, string email, string driverId);
+        Task<ApiResult<bool>> CancelRequestAsync(long requestId, string patientid);
         Task<ApiResult<bool>> CompletePreparationByAgent(long requestId, string agentId, string code, string businessId);
         Task<ApiResult<bool>> ConfirmDelivery(long requestId, string driverId, string deliveryCode);
         Task<ApiResult<bool>> ConfirmPatientDelivery(long requestId, string patientid, string deliveryCode);

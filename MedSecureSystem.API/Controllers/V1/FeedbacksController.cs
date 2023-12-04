@@ -1,7 +1,10 @@
 ﻿using MedSecureSystem.Application.Commons;
 using MedSecureSystem.Application.Dtos;
 using MedSecureSystem.Application.Features.Delivery;
+using MedSecureSystem.Application.Interfaces;
+using MedSecureSystem.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -11,50 +14,42 @@ namespace MedSecureSystem.API.Controllers.V1
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [Authorize]
-    public class FeedbacksController : ControllerBase
+    public class FeedbacksController : BaseIdentityController
     {
-        [HttpGet]
-        [SwaggerOperation(Summary = "All feedback", Description = "Get all feedback created")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResult<PaginatedResult<DeliveryRequestFeedbackDto>>))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ApiResult<PaginatedResult<DeliveryRequestFeedbackDto>>))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetFeebacks()
+        public FeedbacksController(UserManager<ApplicationUser> userManager, IServiceProvider serviceProvider) : base(userManager, serviceProvider)
         {
-
-            return Ok();
         }
 
-        [HttpPost]
-        [SwaggerOperation(Summary = "Create delivery request feedback", Description = "Create delivery request feedback")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResult<DeliveryDto>))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ApiResult<DeliveryDto>))]
+        [HttpPost()]
+        [Authorize(Roles = "BusinessAdmin,Patient,BusinessAgent,Driver")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResult<FeedbackModel>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ApiResult<FeedbackModel>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Post([FromBody] Application.Features.Delivery.CreateDeliveryRequestModel request)
+        public async Task<IActionResult> CreateFeedback([FromBody] CreateDeliveryRequestFeedbackModel model)
         {
+            var deliveryService = _serviceProvider.GetRequiredService<IFeedbackService>();
+            var role = GetRole();
+            var user = GetClaimValue("sub");
+            var businessid = GetClaimValue("businessid");
+            var email = GetClaimValue("email");
 
-            return Ok();
+            return HandleBusinessResult(await deliveryService.AddFeedbackAsync(model, role, user, businessid));
         }
 
-        [HttpGet("{id}")]
-        [SwaggerOperation(Summary = "get delivery request feedback", Description = "get delivery request")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResult<DeliveryRequestFeedbackDto>))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ApiResult<DeliveryRequestFeedbackDto>))]
+        [HttpGet("requestid")]
+        [Authorize(Roles = "BusinessAdmin,Patient,BusinessAgent,Driver")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResult<IEnumerable<FeedbackModel>>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ApiResult<IEnumerable<FeedbackModel>>))]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetRequest(string id)
+        public async Task<IActionResult> AllFeedBacks(long requestid)
         {
+            var deliveryService = _serviceProvider.GetRequiredService<IFeedbackService>();
+            var role = GetRole();
+            var user = GetClaimValue("sub");
+            var businessid = GetClaimValue("businessid");
+            var email = GetClaimValue("email");
 
-            return Ok();
-        }
-
-        [HttpGet("{id}/status")]
-        [SwaggerOperation(Summary = "Cancel delivery request", Description = "Create delivery request")]
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResult<DeliveryRequestFeedbackDto>))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ApiResult<DeliveryRequestFeedbackDto>))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetFeedbackStatus(string id)
-        {
-
-            return Ok();
+            return HandleBusinessResult(await deliveryService.GetFeedbackByDeliveryRequestIdAsync(requestid));
         }
 
     }

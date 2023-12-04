@@ -34,6 +34,12 @@ namespace MedSecureSystem.Application.Mappings
                 .ForMember(dest => dest.AgentName, opt => opt.MapFrom(src => src.Agent == null ? "" : $"{src.Agent.FirstName} {src.Agent.LastName}"))
                 .ForMember(dest => dest.DriverName, opt => opt.MapFrom(src => src.Driver == null ? "" : $"{src.Driver.FirstName} {src.Driver.LastName}"));
 
+
+
+            CreateMap<Feedback, FeedbackModel>()
+               //.IncludeMembers(d => d.Items)
+               .ForMember(dest => dest.UserType, opt => opt.MapFrom(src => src.UserType.GetEnumDescription()))
+               .ForMember(dest => dest.Commenter, opt => opt.MapFrom(src => $"{src.User.FirstName} {src.User.LastName}"));
         }
     }
 }

@@ -254,6 +254,27 @@ username:simisola.oyeneye+patient1@gmail.com
 
 Password1@1
 
+//iyin
+"clientId": "007724a490ce4a9199426f16cf5fea13",
+"clientSecret": "jGcIpSRUsZe89GkYRxmazd9XvIoTKuXnRmfuNq6A/R0=",
+password:Password11@
+username:iyinoluwaf@gmail.com
+10
+
+// iyin busines agent
+"email": "simisola.oyeneye+agent1@gmail.com",
+"password": "Password11@"
+
+
+// patient
+"email": "simisola.oyeneye+patientnew@gmail.com",
+  "password": "Password11@",
+
+// driver
+"email": "simisola.oyeneye+driver@gmail.com",
+  "password": "Password11@"
+
+
 {
     "Email": "simisola.oyeneye+business1@gmail.com",
     "Name": "Drug Phama Corporation",
