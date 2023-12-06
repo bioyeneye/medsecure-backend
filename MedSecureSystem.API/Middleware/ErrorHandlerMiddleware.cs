@@ -31,8 +31,6 @@ namespace MedSecureSystem.API.Middleware
             }
         }
     }
-
-    // Extension method for adding the middleware
     public static class ErrorHandlerMiddlewareExtensions
     {
         public static IApplicationBuilder UseErrorHandler(this IApplicationBuilder builder)

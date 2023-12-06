@@ -179,9 +179,6 @@ namespace MedSecureSystem.API.Controllers.V1
             return HandleBusinessResult(await deliveryService.ConfirmPatientDelivery(id, user, model.Code));
         }
     }
-
-    // 
-
     public class CodeModel
     {
         [Required]
