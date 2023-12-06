@@ -129,7 +129,7 @@ namespace MedSecureSystem.API.Controllers.V1
         }
 
         // POST: api/DeliveryRequest/StartDeliveryByDriver
-        [HttpPost("{id}/StartDeliveryByDriver")]
+        [HttpPost("{id}/start-delivery")]
         [Authorize(Roles = "Driver")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResult<bool>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ApiResult<bool>))]
@@ -146,7 +146,7 @@ namespace MedSecureSystem.API.Controllers.V1
         }
 
         // POST: api/DeliveryRequest/ConfirmDelivery
-        [HttpPost("{id}/driverConfirmDelivery")]
+        [HttpPost("{id}/confirm-delivery")]
         [Authorize(Roles = "Driver")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResult<bool>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ApiResult<bool>))]
@@ -163,7 +163,7 @@ namespace MedSecureSystem.API.Controllers.V1
         }
 
         // POST: api/DeliveryRequest/ConfirmDelivery
-        [HttpPost("{id}/ConfirmDelivery")]
+        [HttpPost("{id}/accept-confirmation")]
         [Authorize(Roles = "Patient")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ApiResult<bool>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ApiResult<bool>))]
@@ -176,9 +176,11 @@ namespace MedSecureSystem.API.Controllers.V1
             var businessid = GetClaimValue("businessid");
             var email = GetClaimValue("email");
 
-            return HandleBusinessResult(await deliveryService.ConfirmDelivery(id, user, model.Code));
+            return HandleBusinessResult(await deliveryService.ConfirmPatientDelivery(id, user, model.Code));
         }
     }
+
+    // 
 
     public class CodeModel
     {
