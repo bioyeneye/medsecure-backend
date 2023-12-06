@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Identity;
-using OpenIddict.EntityFrameworkCore.Models;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MedSecureSystem.Domain.Entities
@@ -15,43 +14,5 @@ namespace MedSecureSystem.Domain.Entities
         public string? Country { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime DateCreated { get; set; } = DateTime.UtcNow;
-    }
-
-    public class CustomApplication : OpenIddictEntityFrameworkCoreApplication<string, CustomAuthorization, CustomToken>
-    {
-        public bool IsActive { get; set; }
-        public string BusinessKey { get; set; }
-        public CustomApplication()
-        {
-            // Generate a new string identifier.
-            Id = Guid.NewGuid().ToString();
-        }
-    }
-
-    public class CustomAuthorization : OpenIddictEntityFrameworkCoreAuthorization<string, CustomApplication, CustomToken>
-    {
-        public CustomAuthorization()
-        {
-            // Generate a new string identifier.
-            Id = Guid.NewGuid().ToString();
-        }
-    }
-
-    public class CustomScope : OpenIddictEntityFrameworkCoreScope<string>
-    {
-        public CustomScope()
-        {
-            // Generate a new string identifier.
-            Id = Guid.NewGuid().ToString();
-        }
-    }
-
-    public class CustomToken : OpenIddictEntityFrameworkCoreToken<string, CustomApplication, CustomAuthorization>
-    {
-        public CustomToken()
-        {
-            // Generate a new string identifier.
-            Id = Guid.NewGuid().ToString();
-        }
     }
 }
