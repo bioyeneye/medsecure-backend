@@ -1,0 +1,6 @@
+@MedSecureSystem.API_HostAddress = http://localhost:5005
+
+GET {{MedSecureSystem.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

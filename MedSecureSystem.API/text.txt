@@ -1,0 +1,284 @@
+
+# Domain Layer
+dotnet new classlib -n MedSecureSystem.Domain -o MedSecureSystem.Domain
+dotnet sln add MedSecureSystem.Domain/MedSecureSystem.Domain.csproj
+
+# Application Layer
+dotnet new classlib -n MedSecureSystem.Application -o MedSecureSystem.Application
+dotnet sln add MedSecureSystem.Application/MedSecureSystem.Application.csproj
+
+# Infrastructure Layer
+dotnet new classlib -n MedSecureSystem.Infrastructure -o MedSecureSystem.Infrastructure
+dotnet sln add MedSecureSystem.Infrastructure/MedSecureSystem.Infrastructure.csproj
+
+# Presentation Layer (e.g., ASP.NET Core Web API)
+dotnet new webapi -n MedSecureSystem.API -o MedSecureSystem.API
+dotnet sln add MedSecureSystem.API/MedSecureSystem.API.csproj
+
+# Shared Layer
+dotnet new classlib -n MedSecureSystem.Shared -o MedSecureSystem.Shared
+dotnet sln add MedSecureSystem.Shared/MedSecureSystem.Shared.csproj
+
+
+dotnet add reference ../MedSecureSystem.Domain/MedSecureSystem.Domain.csproj
+dotnet add reference ../MedSecureSystem.Application/MedSecureSystem.Application.csproj
+dotnet add reference ../MedSecureSystem.Infrastructure/MedSecureSystem.Infrastructure.csproj
+
+~/development/projects/dotnet/MedSecureSystem
+Domain
+??? Application
+    ??? Infrastructure
+        ??? Presentation
+
+app.MapGet("/v{version:apiVersion}/hello", (HttpContext context, string version) =>
+{
+    context.Response.ContentType = "text/plain";
+    return version switch
+    {
+        "1.0" => context.Response.WriteAsync("Hello from version 1.0"),
+        "2.0" => context.Response.WriteAsync("Hello from version 2.0"),
+        _ => context.Response.WriteAsync("Hello from an unspecified version")
+    };
+});
+
+app.MapGet("/login", (string username) =>
+{
+    var claimsPrincipal = new ClaimsPrincipal(
+        new ClaimsIdentity(
+            new[] { new Claim(ClaimTypes.Name, username) },
+            BearerTokenDefaults.AuthenticationScheme
+        )
+    );
+
+    return Results.SignIn(claimsPrincipal);
+}).WithApiVersionSet(versionSet).HasApiVersion(new Asp.Versioning.ApiVersion(1.0));
+ 
+app.MapGet("/user", (ClaimsPrincipal user) =>
+    {
+        return Results.Ok($"Welcome {user.Identity.Name}!");
+    })
+    .RequireAuthorization();
+
+
+ /*services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new OpenApiInfo { Title = "Your API v1", Version = "v1" });
+
+            // Configure Swagger for Bearer token authentication
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Description = "JWT Authorization header using the Bearer scheme",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer"
+            });
+
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+
+            // Include API versioning information in Swagger
+            c.OperationFilter<ApiVersionOperationFilter>();
+            c.DocumentFilter<ApiVersionDocumentFilter>();
+        });*/
+
+dotnet ef migrations add InitialCreate --project MedSecureSystem.Infrastructure --startup-project MedSecureSystem.API
+dotnet ef database update --project MedSecureSystem.Infrastructure --startup-project MedSecureSystem.API
+
+DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+
+
+client_id:system-client
+client_secret:system-secret
+grant_type:password
+password:AdminPassword123!
+scope:openid
+username:systemadmin@medsecure.com
+QCyAN4/RFfjcl4uOeQHmp2JMRQ5be5QwmXkoZCTZIbQ=
+
+
+// Create a new business entity
+            var business = new Business
+            {
+                Name = request.Name,
+                Email = request.Email,
+                // Additional business properties...
+            };
+            // Assume _businessService handles business logic and data persistence
+            var result = await _businessService.CreateBusinessAsync(business);
+
+            if (!result.Success)
+            {
+                return BadRequest(result.Message);
+            }
+
+            // Create a Business Admin user associated with the business
+            var businessAdminUser = new ApplicationUser
+            {
+                UserName = request.Email,
+                Email = request.Email,
+                // Set additional properties as needed
+            };
+            var tempPassword = GenerateTemporaryPassword(); // Implement this method to generate a secure temporary password
+            var createUserResult = await _userManager.CreateAsync(businessAdminUser, tempPassword);
+
+            if (!createUserResult.Succeeded)
+            {
+                return BadRequest(createUserResult.Errors);
+            }
+
+            // Add user to Business Admin role
+            await _userManager.AddToRoleAsync(businessAdminUser, "Business Admin");
+
+            // Send an email to the business admin to complete the registration process
+            // Implement the SendEmailAsync method according to your email service provider
+            await _emailSender.SendEmailAsync(request.Email, "Complete Your Business Registration",
+                $"Please complete your business registration by setting up your permanent password. Your temporary password is: {tempPassword}");
+
+            // Generate client ID and secret for the business
+            var clientId = $"business-{business.Id}-client";
+            var clientSecret = Guid.NewGuid().ToString(); // Generate a secure unique secret
+            var hashedClientSecret = await _applicationManager.HashClientSecretAsync(clientSecret);
+
+            var descriptor = new OpenIddictApplicationDescriptor
+            {
+                ClientId = clientId,
+                ClientSecret = hashedClientSecret,
+                DisplayName = $"{business.Name} Application",
+                Permissions =
+            {
+                OpenIddictConstants.Permissions.Endpoints.Token,
+                OpenIddictConstants.Permissions.GrantTypes.ClientCredentials,
+                // Additional permissions as necessary
+            }
+            };
+
+            await _applicationManager.CreateAsync(descriptor);
+
+            // Return the client ID to the system admin. Do NOT return the client secret.
+            return Ok(new
+            {
+                BusinessId = business.Id,
+                ClientId = clientId,
+                Message = "Business created successfully. Client ID generated. An email has been sent to the business admin to complete registration."
+            });
+
+{
+    "Email": "example@business.com",
+    "Name": "Acme Corporation",
+    "Address": "123 Business Street",
+    "State": "Business State",
+    "Country": "Businessland"
+}
+
+client_id:system-client
+client_secret:QCyAN4/RFfjcl4uOeQHmp2JMRQ5be5QwmXkoZCTZIbQ=
+grant_type:password
+password:)Us33J&@@v36
+scope:offline_access
+username:simisola.oyeneye+business3@gmail.com
+
+client_id:system-client
+client_secret:QCyAN4/RFfjcl4uOeQHmp2JMRQ5be5QwmXkoZCTZIbQ=
+grant_type:password
+password:AdminPassword123!
+scope:offline_access
+username:systemadmin@medsecure.com
+
+client_id:3b5271ac97a64763901556773afe2a4d
+client_secret:kfBc138YxX/Hw3lJxG99mHdT1EdhBUHL/sWeUMrt3+s=
+grant_type:password
+password:Password11@
+scope:offline_access
+username:simisola.oyeneye+business3@gmail.com
+
+client_id:system-client
+client_secret:QCyAN4/RFfjcl4uOeQHmp2JMRQ5be5QwmXkoZCTZIbQ=
+grant_type:password
+password:Password11@
+scope:offline_access
+username:simisola.oyeneye+patient1@gmail.com
+
+{
+  "email": "simisola.oyeneye+patient1@gmail.com",
+  "password": "Password11@",
+  "firstName": "Bolaji",
+  "lastName": "Oyeneye",
+  "phoneNumber": "3099970465",
+    "Address": "123 Business Street",
+    "State": "IL",
+    "Country": "US"
+}
+
+{
+  "firstName": "olaji",
+    "lastName": "yeneye",
+    "phoneNumber": "2099970465",
+  "address": "4123 Business Street",
+      "state": "GA",
+      "country": "USA"
+}
+
+{
+    "businessId": 9,
+    "Items": [
+        {
+            "name": "Medication A",
+            "quantity": "4 numbers",
+            "note": "Dosage instructions: Twice a day"
+        },
+        {
+            "name": "Medication B",
+            "quantity": "1 numbers",
+            "note": "Important: Take after meals"
+        },
+        {
+            "name": "First Aid Kit",
+            "quantity": "1 pack",
+            "note": "Standard kit"
+        }
+    ]
+}
+
+Password1@1
+
+{
+    "Email": "simisola.oyeneye+business1@gmail.com",
+    "Name": "Drug Phama Corporation",
+    "Address": "123 Business Street",
+    "State": "IL",
+    "Country": "US"
+}
+
+{
+  "businessId": 9,
+  "email": "simisola.oyeneye+agent@gmail.com",
+  "password": "Password11@",
+  "firstName": "Agent Q",
+  "lastName": "Pharm",
+  "phoneNumber": "309997065",
+  "address": "123 Business Street",
+    "state": "IL",
+    "country": "US"
+}
+
+client_id:3b5271ac97a64763901556773afe2a4d:system-client
+client_secret:kfBc138YxX/Hw3lJxG99mHdT1EdhBUHL/sWeUMrt3+s=:QCyAN4/RFfjcl4uOeQHmp2JMRQ5be5QwmXkoZCTZIbQ=
+client_secret:57ada00e88b447d3b79e90ee63dc6e03:QCyAN4/RFfjcl4uOeQHmp2JMRQ5be5QwmXkoZCTZIbQ=
+
+cEbvG1xl7TAw4Y/IqD42LOzM6PnyJEPsOX1RNYJ0xHWQ95JH0k6VKrzXYXf35KCoBXp8vZUw7VrGFRoKGBrADQ==
+8n0zb6GOkfUFbmPPAUtGo/WdsX3T9gUaizOiBP9Uek2/Ca6lpH49U+29g/5c2lBXIrwJYzS66BJsKtKGnXFBnA==
+
+hfJ3wYYIHTjefvXzjnLWPCjFk8FmIoB+XOfL7rG1QTTFTt6/+SzCSp8l6bU/Ez4laHEh+YjJOiZfT/IhAiAbwQ==
