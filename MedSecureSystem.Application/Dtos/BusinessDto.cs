@@ -14,6 +14,7 @@ namespace MedSecureSystem.Application.Dtos
         public string State { get; set; }
         public string Country { get; set; }
         public long Id { get; set; }
+
     }
 
     public class BusinessDetailsDto
@@ -61,7 +62,7 @@ namespace MedSecureSystem.Application.Dtos
         public DateTime? DriverCompletedTime { get; set; }
 
         public DateTime? PatientReceivedTime { get; set; }
-        public DateTime CreatedAt { get; set; } 
+        public DateTime CreatedAt { get; set; }
 
 
         public virtual List<DeliveryRequestItemModel> Items { get; set; }
