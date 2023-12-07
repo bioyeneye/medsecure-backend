@@ -311,4 +311,5 @@ namespace MedSecureSystem.API.Controllers.V1
             await emailSender.SendConfirmationLinkAsync(user, email, HtmlEncoder.Default.Encode(confirmEmailUrl));
         }
     }
+
 }
